@@ -34,4 +34,5 @@ public:
 	CListCtrl m_lst_items;
 	afx_msg void OnBnClickedBtnStart();
 	afx_msg void OnBnClickedBtnStop();
+	afx_msg void OnBnClickedBtnQuit();
 };

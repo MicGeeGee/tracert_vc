@@ -6,6 +6,8 @@
 #include "tracert_vc.h"
 #include "tracert_vcDlg.h"
 #include "afxdialogex.h"
+#include "tracert.h"
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -33,6 +35,7 @@ BEGIN_MESSAGE_MAP(Ctracert_vcDlg, CDialogEx)
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDC_BTN_START, &Ctracert_vcDlg::OnBnClickedBtnStart)
 	ON_BN_CLICKED(IDC_BTN_STOP, &Ctracert_vcDlg::OnBnClickedBtnStop)
+	ON_BN_CLICKED(IDC_BTN_QUIT, &Ctracert_vcDlg::OnBnClickedBtnQuit)
 END_MESSAGE_MAP()
 
 
@@ -62,6 +65,8 @@ BOOL Ctracert_vcDlg::OnInitDialog()
 	m_lst_items.InsertColumn(4,_T("Router IP address"),LVCFMT_CENTER,300);
 
 	
+	
+
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -109,7 +114,7 @@ void Ctracert_vcDlg::OnBnClickedBtnStart()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	
-	
+	/*
 	int index=m_lst_items.GetItemCount();
 	char index_str[100];
 	sprintf(index_str,"%d",index);
@@ -125,9 +130,25 @@ void Ctracert_vcDlg::OnBnClickedBtnStart()
 	m_lst_items.SetItemText(row_index,2,_T("40"));
 	m_lst_items.SetItemText(row_index,3,_T("30"));
 	m_lst_items.SetItemText(row_index,4,_T("1.1.1.1"));
+	*/
+
+	//Clear the list.
+	while (m_lst_items.DeleteItem(0));
 
 
+	CEdit* p_edt=(CEdit*)GetDlgItem(IDC_EDT_IP);
+	CString IP_addr;
+	p_edt->GetWindowText(IP_addr);
+	
+	char addr_str[100];
+	int len =WideCharToMultiByte(CP_ACP,0,IP_addr,-1,NULL,0,NULL,NULL);  
+	WideCharToMultiByte(CP_ACP,0,IP_addr,-1,addr_str,len,NULL,NULL );  
+	
+	tracert::instance::init(addr_str,&m_lst_items);
+	//tracert::instance::run();
 
+	unsigned long tid;
+	CreateThread(NULL,0,&(tracert::instance::run),NULL,NULL,&tid);
 }
 
 
@@ -136,4 +157,12 @@ void Ctracert_vcDlg::OnBnClickedBtnStop()
 	// TODO: 在此添加控件通知处理程序代码
 	while (m_lst_items.DeleteItem(0));
 	
+}
+
+
+void Ctracert_vcDlg::OnBnClickedBtnQuit()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	
+
 }
