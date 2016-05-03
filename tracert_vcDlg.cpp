@@ -5,6 +5,7 @@
 #include "stdafx.h"
 #include "tracert_vc.h"
 #include "tracert_vcDlg.h"
+#include "tracert_abtDlg.h"
 #include "afxdialogex.h"
 #include "tracert.h"
 
@@ -22,12 +23,19 @@ Ctracert_vcDlg::Ctracert_vcDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(Ctracert_vcDlg::IDD, pParent)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+	p_tracert=NULL;
 }
 
 void Ctracert_vcDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_LST, m_lst_items);
+	DDX_Control(pDX, IDC_CAP, m_cap);
+	DDX_Control(pDX, IDC_PRGRS, m_prgrs);
+	DDX_Control(pDX, IDC_BTN_START, m_btn_start);
+	DDX_Control(pDX, IDC_BTN_STOP, m_btn_stop);
+	DDX_Control(pDX, IDC_BTN_QUIT, m_btn_quit);
+	DDX_Control(pDX, IDC_EDT_IP, m_edt);
 }
 
 BEGIN_MESSAGE_MAP(Ctracert_vcDlg, CDialogEx)
@@ -36,6 +44,9 @@ BEGIN_MESSAGE_MAP(Ctracert_vcDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BTN_START, &Ctracert_vcDlg::OnBnClickedBtnStart)
 	ON_BN_CLICKED(IDC_BTN_STOP, &Ctracert_vcDlg::OnBnClickedBtnStop)
 	ON_BN_CLICKED(IDC_BTN_QUIT, &Ctracert_vcDlg::OnBnClickedBtnQuit)
+	ON_WM_MOUSEHOVER()
+	ON_WM_MOUSEMOVE()
+	ON_BN_CLICKED(IDC_BTN_ABT, &Ctracert_vcDlg::OnBnClickedBtnAbt)
 END_MESSAGE_MAP()
 
 
@@ -59,15 +70,18 @@ BOOL Ctracert_vcDlg::OnInitDialog()
 
 
 	m_lst_items.InsertColumn(0,_T("#"),LVCFMT_CENTER,20);
-	m_lst_items.InsertColumn(1,_T("Interval 1"),LVCFMT_CENTER,80);
-	m_lst_items.InsertColumn(2,_T("Interval 2"),LVCFMT_CENTER,80);
-	m_lst_items.InsertColumn(3,_T("Interval 3"),LVCFMT_CENTER,80);
+	m_lst_items.InsertColumn(1,_T("Interval 1(ms)"),LVCFMT_CENTER,80);
+	m_lst_items.InsertColumn(2,_T("Interval 2(ms)"),LVCFMT_CENTER,80);
+	m_lst_items.InsertColumn(3,_T("Interval 3(ms)"),LVCFMT_CENTER,80);
 	m_lst_items.InsertColumn(4,_T("Router IP address"),LVCFMT_CENTER,300);
 
-	
-	
+	CHeaderCtrl* p_header_ctrl=(CHeaderCtrl* )m_lst_items.GetHeaderCtrl();
+	p_header_ctrl->EnableWindow(FALSE);
+		
+	m_prgrs.SetRange(0,30);
+	m_prgrs.SetStep(1);
 
-
+	
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
 
@@ -113,28 +127,12 @@ HCURSOR Ctracert_vcDlg::OnQueryDragIcon()
 void Ctracert_vcDlg::OnBnClickedBtnStart()
 {
 	// TODO: 在此添加控件通知处理程序代码
-	
-	/*
-	int index=m_lst_items.GetItemCount();
-	char index_str[100];
-	sprintf(index_str,"%d",index);
-
-	CString index_cstr(index_str);
-	
-	
-
-
-	int row_index=m_lst_items.InsertItem(index,_T("1"));
-	m_lst_items.SetItemText(row_index,0,index_cstr);
-	m_lst_items.SetItemText(row_index,1,_T("30"));
-	m_lst_items.SetItemText(row_index,2,_T("40"));
-	m_lst_items.SetItemText(row_index,3,_T("30"));
-	m_lst_items.SetItemText(row_index,4,_T("1.1.1.1"));
-	*/
-
 	//Clear the list.
 	while (m_lst_items.DeleteItem(0));
-
+	//Clear progress bar.
+	m_prgrs.SetPos(0);
+	//Clear default caption.
+	def_cap=CString("");
 
 	CEdit* p_edt=(CEdit*)GetDlgItem(IDC_EDT_IP);
 	CString IP_addr;
@@ -144,11 +142,11 @@ void Ctracert_vcDlg::OnBnClickedBtnStart()
 	int len =WideCharToMultiByte(CP_ACP,0,IP_addr,-1,NULL,0,NULL,NULL);  
 	WideCharToMultiByte(CP_ACP,0,IP_addr,-1,addr_str,len,NULL,NULL );  
 	
-	tracert::instance::init(addr_str,&m_lst_items);
+	tracert::instance::init(addr_str,&m_lst_items,&m_prgrs,&def_cap);
 	//tracert::instance::run();
 
 	unsigned long tid;
-	CreateThread(NULL,0,&(tracert::instance::run),NULL,NULL,&tid);
+	p_tracert=CreateThread(NULL,0,&(tracert::instance::run),NULL,NULL,&tid);
 }
 
 
@@ -156,13 +154,106 @@ void Ctracert_vcDlg::OnBnClickedBtnStop()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	while (m_lst_items.DeleteItem(0));
-	
+	if(p_tracert)
+	{
+		TerminateThread(p_tracert,0);
+		tracert::instance::terminate();
+		p_tracert=NULL;
+	}
+	m_prgrs.SetPos(0);
+	def_cap=CString("");
 }
 
 
 void Ctracert_vcDlg::OnBnClickedBtnQuit()
 {
 	// TODO: 在此添加控件通知处理程序代码
-	
+	CDialog::OnOK();
+}
 
+BOOL Ctracert_vcDlg::PreTranslateMessage(MSG* p_msg)
+{
+	if(p_msg->message==WM_KEYDOWN)
+	{
+		//Capture the 'ENTER' and 'ESC'.
+		if(p_msg->wParam==VK_RETURN)
+		{
+			OnBnClickedBtnStart();
+			return TRUE;
+		}
+		if(p_msg->wParam==VK_ESCAPE)
+		{
+			OnOK();
+			return TRUE;
+		}
+	}
+	if(p_msg->message == WM_MOUSEMOVE)    
+		if(p_msg->hwnd != m_hWnd)
+		{  
+			CPoint p;    
+			p = p_msg->pt;  
+			//FromHandle(p_msg->hwnd)->ScreenToClient(&p);
+			ScreenToClient(&p);
+
+			CRect rect_start;
+			CRect rect_stop;
+			CRect rect_quit;
+			CRect rect_edt;
+		
+			m_btn_start.GetWindowRect(&rect_start);
+			m_btn_stop.GetWindowRect(&rect_stop);
+			m_btn_quit.GetWindowRect(&rect_quit);
+			m_edt.GetWindowRect(&rect_edt);
+
+			ScreenToClient(&rect_start);
+			ScreenToClient(&rect_stop);
+			ScreenToClient(&rect_quit);
+			ScreenToClient(&rect_edt);
+
+
+			if(is_in_control(rect_start,p))
+				m_cap.SetWindowText(_T("Start traceroute.(Or press 'Enter')"));
+			else if(is_in_control(rect_stop,p))
+				m_cap.SetWindowText(_T("Terminate traceroute."));
+			else if(is_in_control(rect_quit,p))
+				m_cap.SetWindowText(_T("Close the window.(Or press 'Esc')"));
+			else if(is_in_control(rect_edt,p))
+				m_cap.SetWindowText(_T("Destination IP address for test, press 'Enter' to start tracerouting."));
+			else
+				m_cap.SetWindowText(def_cap);
+		}
+		else
+				m_cap.SetWindowText(def_cap);
+
+	return CDialog::PreTranslateMessage(p_msg);
+}
+
+void Ctracert_vcDlg::OnMouseHover(UINT nFlags, CPoint point)
+{
+	// TODO: 在此添加消息处理程序代码和/或调用默认值
+
+	CDialogEx::OnMouseHover(nFlags, point);
+}
+
+bool Ctracert_vcDlg::is_in_control(const CRect& rect,const CPoint& p)
+{
+	//return (p.x> rect.left && p.x < rect.right && p.y> rect.top && p.y <rect.bottom);
+	return (p.x>= rect.left-1 && p.x < rect.right+1  && p.y> rect.top-1&& p.y <rect.bottom+1);
+}
+
+void Ctracert_vcDlg::OnMouseMove(UINT nFlags, CPoint point)
+{
+	// TODO: 在此添加消息处理程序代码和/或调用默认值
+	
+	
+	CDialogEx::OnMouseMove(nFlags, point);
+}
+
+
+void Ctracert_vcDlg::OnBnClickedBtnAbt()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	Ctracert_abtDlg* abt_dlg=new Ctracert_abtDlg();
+	abt_dlg->DoModal();
+	
 }

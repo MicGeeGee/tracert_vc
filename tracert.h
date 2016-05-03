@@ -56,8 +56,10 @@ namespace tracert
 	class instance
 	{
 	public:
-		static void init(const char* IP_addr,CListCtrl* l_ptr);
+		static void init(const char* IP_addr,CListCtrl* l_ptr,CProgressCtrl* p_ptr,CString* c_ptr);
 		static unsigned long __stdcall run(void* arg);
+		static void terminate();
+
 
 	private:
 		static struct tracert_row
@@ -83,6 +85,8 @@ namespace tracert
 		static char ICMP_recv_buf[ICMP_PACKET_LEN_MAX];
 
 		static CListCtrl* p_lst;
+		static CProgressCtrl* p_prgrs;
+		static CString* p_cap;
 
 
 		

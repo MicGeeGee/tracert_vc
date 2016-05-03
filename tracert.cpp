@@ -13,17 +13,31 @@ namespace tracert
 	char instance::ICMP_recv_buf[ICMP_PACKET_LEN_MAX];
 
 	CListCtrl* instance::p_lst;
+	CProgressCtrl* instance::p_prgrs;
+	CString* instance::p_cap;
 
-	void instance::init(const char* IP_addr,CListCtrl* l_ptr)
+	void instance::init(const char* IP_addr,CListCtrl* l_ptr,CProgressCtrl* p_ptr,CString* c_ptr)
 	{
 		if(!l_ptr)
 		{
-			show_exception("pointer of list is NULL.");
+			show_exception("Pointer of list is NULL.");
 			return;
 		}
-		
+		if(!p_ptr)
+		{
+			show_exception("Pointer of progress bar is NULL.");
+			return;
+		}
+		if(!c_ptr)
+		{
+			show_exception("Pointer of caption is NULL.");
+			return;
+		}
+
 		//Initialize the list control.
 		p_lst=l_ptr;
+		p_prgrs=p_ptr;
+		p_cap=c_ptr;
 		DWORD grid_style = p_lst->GetExtendedStyle();
 		grid_style|= LVS_EX_FULLROWSELECT;
 		grid_style|= LVS_EX_GRIDLINES;
@@ -103,12 +117,24 @@ namespace tracert
 			cstr=CString(str);
 			p_lst->SetItemText(row_index,1,cstr);
 		}
+		else if(t1==0)
+		{
+			sprintf(str,"<1");
+			cstr=CString(str);
+			p_lst->SetItemText(row_index,1,cstr);
+		}
 		else
 			p_lst->SetItemText(row_index,1,_T("*"));
 
 		if(t2>0)
 		{
 			sprintf(str,"%d",t2);
+			cstr=CString(str);
+			p_lst->SetItemText(row_index,2,cstr);
+		}
+		else if(t2==0)
+		{
+			sprintf(str,"<1");
 			cstr=CString(str);
 			p_lst->SetItemText(row_index,2,cstr);
 		}
@@ -121,10 +147,23 @@ namespace tracert
 			cstr=CString(str);
 			p_lst->SetItemText(row_index,3,cstr);
 		}
+		else if(t3==0)
+		{
+			sprintf(str,"<1");
+			cstr=CString(str);
+			p_lst->SetItemText(row_index,3,cstr);
+		}
 		else
 			p_lst->SetItemText(row_index,3,_T("*"));
 
-		cstr=CString(addr);
+
+		if(t1<0 && t2<0 && t3<0)
+		{
+			sprintf(str,"Request timed out");
+			cstr=CString(str);
+		}
+		else
+			cstr=CString(addr);
 		p_lst->SetItemText(row_index,4,cstr);
 	}
 
@@ -138,7 +177,7 @@ namespace tracert
 		
 		int i=0;
 
-		while(!is_dest_reached && hop_limit)
+		while(true)
 		{
 			//Set up the TTL in IP header.
 			setsockopt(sock,IPPROTO_IP,IP_TTL,(char*)&TTL,sizeof(TTL));
@@ -190,7 +229,17 @@ namespace tracert
 				}
 				else if(WSAGetLastError()==WSAETIMEDOUT)
 				{
-					temp_row.t1=-1;
+					//temp_row.t1=-1;
+
+					switch (i%3)
+					{
+					case 0:temp_row.t1=-1;break;
+					case 1:temp_row.t2=-1;break;
+					case 2:temp_row.t3=-1;break;
+					default:
+						break;
+					}
+
 					break;
 				}
 				else
@@ -206,13 +255,43 @@ namespace tracert
 			if((++i)%3!=0)
 				continue;
 
-			TTL++;
-			hop_limit--;
-
 			//Show the new row.
 			add_row(temp_row.t1,temp_row.t2,temp_row.t3,temp_row.addr);
+			if(temp_row.t1>0||temp_row.t2>0||temp_row.t3>0)
+			{
+				char cap_str[100];
+				sprintf(cap_str,"Received packet from node#%d.(IP address:%s)",TTL-1,temp_row.addr);
+				*p_cap=CString(cap_str);
+			}
+			else
+			{
+				char cap_str[100];
+				sprintf(cap_str,"Timed out at node#%d.",TTL-1);
+				*p_cap=CString(cap_str);
+			}
+
+
+			//Change the TTL field.
+			TTL++;
+			hop_limit--;
+			p_prgrs->StepIt();
+
+			
+			//Termination requirement.
+			if(is_dest_reached || !hop_limit)
+				break;
 		}
+		p_prgrs->SetPos(30);
+		
+		*p_cap=CString("Done.(Destination IP address:")+CString(inet_ntoa(*(in_addr*)(&dest_sock_addr.sin_addr)))+CString(")");
+
 		return 0;
+	}
+
+	void instance::terminate()
+	{
+		closesocket(sock);
+		WSACleanup();
 	}
 
 	unsigned short instance::generate_checksum(unsigned short* p_buf,int size)

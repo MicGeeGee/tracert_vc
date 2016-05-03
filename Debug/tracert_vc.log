@@ -1,20 +1,10 @@
-﻿生成启动时间为 2016/5/2 星期一 22:01:51。
+﻿生成启动时间为 2016/5/3 星期二 17:39:20。
      1>项目“F:\PPT\computer network\exp\tracert_vc\tracert_vc\tracert_vc.vcxproj”在节点 2 上(Build 个目标)。
-     1>ClCompile:
-         G:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D _UNICODE /D UNICODE /D _AFXDLL /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Yu"stdafx.h" /Fp"Debug\tracert_vc.pch" /Fo"Debug\\" /Fd"Debug\vc110.pdb" /Gd /TP /analyze- /errorReport:prompt tracert.cpp
-         tracert.cpp
-     1>f:\ppt\computer network\exp\tracert_vc\tracert_vc\tracert.cpp(94): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-                 g:\program files (x86)\microsoft visual studio 11.0\vc\include\stdio.h(357) : 参见“sprintf”的声明
-     1>f:\ppt\computer network\exp\tracert_vc\tracert_vc\tracert.cpp(102): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-                 g:\program files (x86)\microsoft visual studio 11.0\vc\include\stdio.h(357) : 参见“sprintf”的声明
-     1>f:\ppt\computer network\exp\tracert_vc\tracert_vc\tracert.cpp(111): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-                 g:\program files (x86)\microsoft visual studio 11.0\vc\include\stdio.h(357) : 参见“sprintf”的声明
-     1>f:\ppt\computer network\exp\tracert_vc\tracert_vc\tracert.cpp(120): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-                 g:\program files (x86)\microsoft visual studio 11.0\vc\include\stdio.h(357) : 参见“sprintf”的声明
-     1>f:\ppt\computer network\exp\tracert_vc\tracert_vc\tracert.cpp(309): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-                 g:\program files (x86)\microsoft visual studio 11.0\vc\include\stdio.h(357) : 参见“sprintf”的声明
+     1>ResourceCompile:
+         C:\Program Files (x86)\Windows Kits\8.0\bin\x86\rc.exe /D _DEBUG /D _UNICODE /D UNICODE /D _AFXDLL /l"0x0409" /IDebug\ /nologo /fo"Debug\tracert_vc.res" tracert_vc.rc 
        Link:
          G:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"F:\PPT\computer network\exp\tracert_vc\Debug\tracert_vc.exe" /INCREMENTAL /NOLOGO /MANIFEST /MANIFESTUAC:"level='requireAdministrator' uiAccess='false'" /manifest:embed /manifestinput:"G:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\Include\Manifest\dpiaware.manifest" /DEBUG /PDB:"F:\PPT\computer network\exp\tracert_vc\Debug\tracert_vc.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /ENTRY:"wWinMainCRTStartup" /DYNAMICBASE /NXCOMPAT /IMPLIB:"F:\PPT\computer network\exp\tracert_vc\Debug\tracert_vc.lib" /MACHINE:X86 Debug\tracert_vc.res
+         Debug\tracert_abtDlg.obj
          Debug\stdafx.obj
          Debug\tracert.obj
          Debug\tracert_vc.obj
@@ -24,4 +14,4 @@
 
 生成成功。
 
-已用时间 00:00:02.77
+已用时间 00:00:00.55

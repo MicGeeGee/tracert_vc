@@ -36,6 +36,9 @@
     <ClInclude Include="tracert.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="tracert_abtDlg.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="tracert_vc.cpp">
@@ -48,6 +51,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="tracert.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="tracert_abtDlg.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -63,6 +69,9 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\tracert_vc.ico">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\pic.bmp">
       <Filter>资源文件</Filter>
     </Image>
   </ItemGroup>
